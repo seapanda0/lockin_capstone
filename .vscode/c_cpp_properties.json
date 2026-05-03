@@ -1,0 +1,26 @@
+{
+    "configurations": [
+        {
+            "name": "Your Project Name",
+            "includePath": [
+                "${workspaceFolder}/**",  // Include all files from the workspace folder
+                "/home/fera/.espressif/v6.0.1/esp-idf/components/freertos/FreeRTOS-Kernel/include",
+                "/home/fera/.espressif/v6.0.1/esp-idf/components/log/include",
+                "/home/fera/.espressif/v6.0.1/esp-idf/components/esp_timer/include",
+                "/home/fera/.espressif/v6.0.1/esp-idf/components/driver/i2c/include",
+                "/home/fera/.espressif/v6.0.1/esp-idf/components/**"
+            ],
+            "defines": [],
+            "intelliSenseMode": "clang-x64",
+            "browse": {
+                "path": [
+                    "${workspaceFolder}/**",
+                    "/home/fera/.espressif/v6.0.1/esp-idf/components/**"
+                ],
+                "limitSymbolsToIncludedHeaders": true,
+                "databaseFilename": ""  
+            }
+        }
+    ],
+    "version": 4
+}
