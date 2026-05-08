@@ -28,8 +28,13 @@ static void set_angle(void * obj, int32_t v)
 void example_lvgl_demo_ui(lv_display_t *disp)
 {
     lv_obj_t *scr = lv_display_get_screen_active(disp);
+    lv_obj_set_style_bg_color(scr, lv_color_black(), 0);
+    lv_obj_set_style_bg_opa(scr, LV_OPA_COVER, 0);
 
     btn = lv_button_create(scr);
+    lv_obj_set_style_bg_color(btn, lv_color_black(), 0);
+    lv_obj_set_style_border_color(btn, lv_color_white(), 0);
+    lv_obj_set_style_text_color(btn, lv_color_white(), 0);
     lv_obj_t * lbl = lv_label_create(btn);
     lv_label_set_text_static(lbl, LV_SYMBOL_REFRESH" ROTATE");
     lv_obj_align(btn, LV_ALIGN_BOTTOM_LEFT, 30, -30);
@@ -40,6 +45,10 @@ void example_lvgl_demo_ui(lv_display_t *disp)
     lv_obj_t * arc = lv_arc_create(scr);
     lv_arc_set_rotation(arc, 270);
     lv_arc_set_bg_angles(arc, 0, 360);
+    lv_obj_set_style_arc_color(arc, lv_color_white(), LV_PART_MAIN);
+    lv_obj_set_style_arc_width(arc, 14, LV_PART_MAIN);
+    lv_obj_set_style_arc_color(arc, lv_color_hex(0xFF8C00), LV_PART_INDICATOR);
+    lv_obj_set_style_arc_width(arc, 14, LV_PART_INDICATOR);
     lv_obj_remove_style(arc, NULL, LV_PART_KNOB);   /*Be sure the knob is not displayed*/
     lv_obj_remove_flag(arc, LV_OBJ_FLAG_CLICKABLE);  /*To not allow adjusting by click*/
     lv_obj_center(arc);
