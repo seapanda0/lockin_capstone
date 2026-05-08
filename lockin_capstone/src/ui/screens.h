@@ -17,6 +17,11 @@ enum ScreensEnum {
 
 typedef struct _objects_t {
     lv_obj_t *main;
+    lv_obj_t *button_10min;
+    lv_obj_t *button_15min;
+    lv_obj_t *button_25min;
+    lv_obj_t *button_10s;
+    lv_obj_t *obj0;
 } objects_t;
 
 extern objects_t objects;

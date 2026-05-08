@@ -296,6 +296,7 @@ static void display_task(void *arg)
     // Main LVGL loop
     while (1) {
         lv_timer_handler();
+        ui_tick();
         vTaskDelay(pdMS_TO_TICKS(10));
         lv_tick_inc(10);
     }

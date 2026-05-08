@@ -1,3 +1,3 @@
-idf_component_register(SRCS "ui.c" "screens.c" "styles.c" "images.c"
-                    INCLUDE_DIRS "."
-                    REQUIRES lvgl)
+idf_component_register(SRCS "ui.c" "screens.c" "styles.c" "images.c" "../../../main/app_logic.c"
+                    INCLUDE_DIRS "." "../../../main"
+                    REQUIRES lvgl freertos)
