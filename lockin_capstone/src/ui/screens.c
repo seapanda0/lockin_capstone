@@ -119,6 +119,14 @@ void create_screen_main() {
             lv_obj_add_event_cb(obj, event_handler_cb_main_obj0, LV_EVENT_ALL, 0);
             lv_obj_remove_flag(obj, LV_OBJ_FLAG_CLICKABLE);
         }
+        {
+            // time_text
+            lv_obj_t *obj = lv_label_create(parent_obj);
+            objects.time_text = obj;
+            lv_obj_set_pos(obj, 80, 112);
+            lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
+            lv_label_set_text(obj, "");
+        }
     }
     
     tick_screen_main();
@@ -131,6 +139,15 @@ void tick_screen_main() {
         if (new_val != cur_val) {
             tick_value_change_obj = objects.obj0;
             lv_arc_set_value(objects.obj0, new_val);
+            tick_value_change_obj = NULL;
+        }
+    }
+    {
+        const char *new_val = get_var_display_text_str();
+        const char *cur_val = lv_label_get_text(objects.time_text);
+        if (strcmp(new_val, cur_val) != 0) {
+            tick_value_change_obj = objects.time_text;
+            lv_label_set_text(objects.time_text, new_val);
             tick_value_change_obj = NULL;
         }
     }

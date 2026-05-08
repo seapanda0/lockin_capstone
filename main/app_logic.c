@@ -5,6 +5,8 @@
 #include "freertos/timers.h"
 #include "esp_log.h"
 #include "ui.h"
+#include <stdio.h>
+#include <string.h>
 
 static const char *TAG = "APP_LOGIC";
 
@@ -30,6 +32,9 @@ void stop_timer();
 // ============= Variable Storage =============
 static int32_t timer_arc_value = 0;
 
+// Display text for remaining time (MM:SS or "10s")
+static char timer_display_text[16] = "";
+
 // Getter/Setter for timer_arc_value (called by generated UI)
 int32_t get_var_timer_arc_value() {
     return timer_arc_value;
@@ -39,10 +44,25 @@ void set_var_timer_arc_value(int32_t value) {
     timer_arc_value = value;
 }
 
+const char *get_var_display_text_str() {
+    return timer_display_text;
+}
+
+void set_var_display_text_str(const char *value) {
+    if (value == NULL) {
+        timer_display_text[0] = '\0';
+        return;
+    }
+    strncpy(timer_display_text, value, sizeof(timer_display_text) - 1);
+    timer_display_text[sizeof(timer_display_text) - 1] = '\0';
+}
+
 // ============= Arc Update Helper =============
 static void update_arc_display() {
     if (pomodoro.duration_sec == 0) {
         set_var_timer_arc_value(0);
+        // Update display text to 00:00
+        set_var_display_text_str("00:00");
         return;
     }
     // Calculate arc value: 0-100 based on remaining time
@@ -50,6 +70,13 @@ static void update_arc_display() {
     if (arc_val < 0) arc_val = 0;
     if (arc_val > 100) arc_val = 100;
     set_var_timer_arc_value(arc_val);
+    
+    // Format remaining time as MM:SS and update display text
+    uint32_t mins = pomodoro.remaining_sec / 60;
+    uint32_t secs = pomodoro.remaining_sec % 60;
+    char buf[16];
+    snprintf(buf, sizeof(buf), "%02u:%02u", (unsigned)mins, (unsigned)secs);
+    set_var_display_text_str(buf);
 }
 
 // ============= FreeRTOS Timer Callback =============
