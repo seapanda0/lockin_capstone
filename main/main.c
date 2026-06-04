@@ -246,6 +246,8 @@ static void display_task(void *arg)
     // Give the serial monitor time to connect over USB before printing important logs
     vTaskDelay(pdMS_TO_TICKS(3000));
 
+    printf("Reset reason: %d\n", esp_reset_reason());
+
     // Initialize Touch Controller
     tp_init();
 
@@ -302,9 +304,55 @@ static void display_task(void *arg)
     }
 }
 
+void test_motor_task(void *arg){
+    
+    gpio_set_direction(MOTOR_B_L, GPIO_MODE_OUTPUT);
+    gpio_set_direction(MOTOR_B_H, GPIO_MODE_OUTPUT);
+    gpio_set_direction(MOTOR_A_L, GPIO_MODE_OUTPUT);
+    gpio_set_direction(MOTOR_A_H, GPIO_MODE_OUTPUT);
+
+    gpio_set_level(MOTOR_B_L, 0);
+    gpio_set_level(MOTOR_B_H, 0);
+    gpio_set_level(MOTOR_A_L, 0);
+    gpio_set_level(MOTOR_A_H, 0);
+
+    vTaskDelay(pdMS_TO_TICKS(4000));
+
+    while (1){
+        gpio_set_level(MOTOR_B_L, 1);
+        gpio_set_level(MOTOR_A_H, 1);
+        gpio_set_level(MOTOR_B_H, 0);
+        gpio_set_level(MOTOR_A_L, 0);
+
+        vTaskDelay(pdMS_TO_TICKS(4000));
+
+        gpio_set_level(MOTOR_B_L, 0);
+        gpio_set_level(MOTOR_A_H, 0);
+        gpio_set_level(MOTOR_B_H, 0);
+        gpio_set_level(MOTOR_A_L, 0);
+
+        vTaskDelay(pdMS_TO_TICKS(1200));
+
+        gpio_set_level(MOTOR_B_L, 0);
+        gpio_set_level(MOTOR_A_H, 0);
+        gpio_set_level(MOTOR_B_H, 1);
+        gpio_set_level(MOTOR_A_L, 1);
+
+        vTaskDelay(pdMS_TO_TICKS(4000));
+
+        gpio_set_level(MOTOR_B_L, 0);
+        gpio_set_level(MOTOR_A_H, 0);
+        gpio_set_level(MOTOR_B_H, 0);
+        gpio_set_level(MOTOR_A_L, 0);
+
+        vTaskDelay(pdMS_TO_TICKS(1200));
+        
+    }
+}
 
 void app_main(void)
 {
     xTaskCreate(display_task, "display_task", DISPLAY_TASK_STACK_SIZE, NULL, DISPLAY_TASK_PRIORITY, NULL);
+    xTaskCreate(test_motor_task, "test_motor_task", DISPLAY_TASK_STACK_SIZE, NULL, DISPLAY_TASK_PRIORITY, NULL);
     vTaskDelete(NULL);
 }

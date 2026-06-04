@@ -13,6 +13,7 @@
       "flowSupport": false,
       "displayWidth": 320,
       "displayHeight": 240,
+      "circularDisplay": false,
       "displayBorderRadius": 0,
       "colorFormat": "BGR",
       "resourceFiles": [],
@@ -601,10 +602,10 @@
             {
               "objID": "4e7c15a0-471e-4297-e8a9-93fed9ad9c91",
               "type": "LVGLLabelWidget",
-              "left": 38,
+              "left": 80,
               "top": 112,
-              "width": 122,
-              "height": 30,
+              "width": 39,
+              "height": 16,
               "customInputs": [],
               "customOutputs": [],
               "style": {
@@ -619,7 +620,7 @@
               "leftUnit": "px",
               "topUnit": "px",
               "widthUnit": "content",
-              "heightUnit": "px",
+              "heightUnit": "content",
               "children": [],
               "widgetFlags": "CLICK_FOCUSABLE|GESTURE_BUBBLE|PRESS_LOCK|SCROLLABLE|SCROLL_CHAIN_HOR|SCROLL_CHAIN_VER|SCROLL_ELASTIC|SCROLL_MOMENTUM|SCROLL_WITH_ARROW|SNAPPABLE",
               "hiddenFlagType": "literal",
@@ -639,7 +640,8 @@
               "text": "display_text_str",
               "textType": "expression",
               "longMode": "WRAP",
-              "recolor": false
+              "recolor": false,
+              "previewValue": "00:00"
             }
           ],
           "widgetFlags": "CLICKABLE|PRESS_LOCK|CLICK_FOCUSABLE|GESTURE_BUBBLE|SNAPPABLE|SCROLLABLE|SCROLL_ELASTIC|SCROLL_MOMENTUM|SCROLL_CHAIN_HOR|SCROLL_CHAIN_VER",
