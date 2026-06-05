@@ -12,6 +12,8 @@
 #include "esp_system.h"
 #include "driver/i2c_master.h"
 #include "driver/gpio.h"
+#include "driver/mcpwm_prelude.h"
+
 
 #include "pinout.h"
 #include "st7789.h"
@@ -304,57 +306,133 @@ static void display_task(void *arg)
     }
 }
 
-void test_motor_task(void *arg){
+#define TIMER_RESOLUTION 80000000 // 80Mhz which is half of the 160Mhz source used
+#define COUNTER_PERIOD 8000 // 8000 ticks for 10kHz PWM
+
+void motor_task(void *arg){
+
+    mcpwm_timer_handle_t timer0 = NULL;
+    mcpwm_timer_config_t timer0_config = {
+        .group_id = 0,
+        .clk_src = MCPWM_TIMER_CLK_SRC_PLL160M, // 160Mhz default clock source
+        .resolution_hz = TIMER_RESOLUTION,
+        .count_mode = MCPWM_TIMER_COUNT_MODE_UP, //Count up down for symetric waveform to reduce harmonics when driving DC motors
+        .period_ticks = COUNTER_PERIOD
+    };
+
+    mcpwm_new_timer(&timer0_config, &timer0);
+
+    // Configure mcpwm operator
+    mcpwm_oper_handle_t operator0 = NULL, operator1 = NULL;
+    mcpwm_operator_config_t operator_config = {
+        .group_id = 0,
+    };
+    mcpwm_new_operator(&operator_config, &operator0);
+    mcpwm_new_operator(&operator_config, &operator1);
+    mcpwm_operator_connect_timer(operator0, timer0);
+    mcpwm_operator_connect_timer(operator1, timer0);
+
+    // Configure mcpwm comparator
+    // m_a_h & m_b_l -> operator0
+    // m_a_l & m_b_h -> operator1
+
+    mcpwm_cmpr_handle_t cmp_m_a_h = NULL, cmp_m_a_l = NULL, cmp_m_b_h = NULL, cmp_m_b_l = NULL;
+    mcpwm_comparator_config_t comparator_config = {
+        .flags.update_cmp_on_tep = true
+    };
     
-    gpio_set_direction(MOTOR_B_L, GPIO_MODE_OUTPUT);
-    gpio_set_direction(MOTOR_B_H, GPIO_MODE_OUTPUT);
-    gpio_set_direction(MOTOR_A_L, GPIO_MODE_OUTPUT);
-    gpio_set_direction(MOTOR_A_H, GPIO_MODE_OUTPUT);
+    mcpwm_new_comparator(operator0, &comparator_config, &cmp_m_a_h);
+    mcpwm_new_comparator(operator0, &comparator_config, &cmp_m_b_l);
+    mcpwm_new_comparator(operator1, &comparator_config, &cmp_m_a_l);
+    mcpwm_new_comparator(operator1, &comparator_config, &cmp_m_b_h);
 
-    gpio_set_level(MOTOR_B_L, 0);
-    gpio_set_level(MOTOR_B_H, 0);
-    gpio_set_level(MOTOR_A_L, 0);
-    gpio_set_level(MOTOR_A_H, 0);
+    mcpwm_gen_handle_t gen_m_a_h = NULL, gen_m_a_l = NULL, gen_m_b_h = NULL, gen_m_b_l = NULL;
+    mcpwm_generator_config_t gen_m_a_h_config = {.gen_gpio_num = MOTOR_A_H};
+    mcpwm_generator_config_t gen_m_a_l_config = {.gen_gpio_num = MOTOR_A_L};
+    mcpwm_generator_config_t gen_m_b_h_config = {.gen_gpio_num = MOTOR_B_H};
+    mcpwm_generator_config_t gen_m_b_l_config = {.gen_gpio_num = MOTOR_B_L};
 
-    vTaskDelay(pdMS_TO_TICKS(4000));
+    mcpwm_new_generator(operator0, &gen_m_a_h_config, &gen_m_a_h);
+    mcpwm_new_generator(operator0, &gen_m_b_l_config, &gen_m_b_l);
+    // mcpwm_new_generator(operator1, &gen_m_a_l_config, &gen_m_a_l);
+    // mcpwm_new_generator(operator1, &gen_m_b_h_config, &gen_m_b_h);
 
-    while (1){
-        gpio_set_level(MOTOR_B_L, 1);
-        gpio_set_level(MOTOR_A_H, 1);
-        gpio_set_level(MOTOR_B_H, 0);
-        gpio_set_level(MOTOR_A_L, 0);
+    ESP_ERROR_CHECK(mcpwm_generator_set_action_on_timer_event(gen_m_a_h,
+                    MCPWM_GEN_TIMER_EVENT_ACTION(MCPWM_TIMER_DIRECTION_UP, MCPWM_TIMER_EVENT_EMPTY, MCPWM_GEN_ACTION_HIGH)));
+    ESP_ERROR_CHECK(mcpwm_generator_set_action_on_compare_event(gen_m_a_h,
+                    MCPWM_GEN_COMPARE_EVENT_ACTION(MCPWM_TIMER_DIRECTION_UP, cmp_m_a_h, MCPWM_GEN_ACTION_LOW)));
+    
+    ESP_ERROR_CHECK(mcpwm_generator_set_action_on_timer_event(gen_m_b_l,
+                    MCPWM_GEN_TIMER_EVENT_ACTION(MCPWM_TIMER_DIRECTION_UP, MCPWM_TIMER_EVENT_EMPTY, MCPWM_GEN_ACTION_HIGH)));
+    ESP_ERROR_CHECK(mcpwm_generator_set_action_on_compare_event(gen_m_b_l,
+                    MCPWM_GEN_COMPARE_EVENT_ACTION(MCPWM_TIMER_DIRECTION_UP, cmp_m_b_l, MCPWM_GEN_ACTION_LOW)));
+    
 
-        vTaskDelay(pdMS_TO_TICKS(4000));
-        
-        // Braking
-        gpio_set_level(MOTOR_B_L, 0);
-        gpio_set_level(MOTOR_A_H, 1);
-        gpio_set_level(MOTOR_B_H, 1);
-        gpio_set_level(MOTOR_A_L, 0);
+    mcpwm_comparator_set_compare_value(cmp_m_a_h, 0);
+    mcpwm_comparator_set_compare_value(cmp_m_a_l, 0);
+    // mcpwm_comparator_set_compare_value(cmp_m_b_h, 0);
+    // mcpwm_comparator_set_compare_value(cmp_m_b_l, 0);
 
-        vTaskDelay(pdMS_TO_TICKS(100));
+    mcpwm_timer_enable(timer0);
+    mcpwm_timer_start_stop(timer0, MCPWM_TIMER_START_NO_STOP);
 
-        gpio_set_level(MOTOR_B_L, 0);
-        gpio_set_level(MOTOR_A_H, 0);
-        gpio_set_level(MOTOR_B_H, 1);
-        gpio_set_level(MOTOR_A_L, 1);
-
-        vTaskDelay(pdMS_TO_TICKS(4000));
-        
-        // Braking
-        gpio_set_level(MOTOR_B_L, 0);
-        gpio_set_level(MOTOR_A_H, 1);
-        gpio_set_level(MOTOR_B_H, 1);
-        gpio_set_level(MOTOR_A_L, 0);
-
-        vTaskDelay(pdMS_TO_TICKS(100));
-        
+    while(1){
+        for(int i = 1000; i <= 8000; i += 1000){
+            mcpwm_comparator_set_compare_value(cmp_m_a_h, i);
+            mcpwm_comparator_set_compare_value(cmp_m_b_l, i);
+            ESP_LOGI(TAG, "compare value i = %d", i);
+            vTaskDelay(pdMS_TO_TICKS(1000));
+        }
     }
+    
+    // gpio_set_direction(MOTOR_B_L, GPIO_MODE_OUTPUT);
+    // gpio_set_direction(MOTOR_B_H, GPIO_MODE_OUTPUT);
+    // gpio_set_direction(MOTOR_A_L, GPIO_MODE_OUTPUT);
+    // gpio_set_direction(MOTOR_A_H, GPIO_MODE_OUTPUT);
+
+    // gpio_set_level(MOTOR_B_L, 0);
+    // gpio_set_level(MOTOR_B_H, 0);
+    // gpio_set_level(MOTOR_A_L, 0);
+    // gpio_set_level(MOTOR_A_H, 0);
+
+    // vTaskDelay(pdMS_TO_TICKS(4000));
+
+    // while (1){
+    //     gpio_set_level(MOTOR_B_L, 1);
+    //     gpio_set_level(MOTOR_A_H, 1);
+    //     gpio_set_level(MOTOR_B_H, 0);
+    //     gpio_set_level(MOTOR_A_L, 0);
+
+    //     vTaskDelay(pdMS_TO_TICKS(4000));
+        
+    //     // Braking
+    //     gpio_set_level(MOTOR_B_L, 1);
+    //     gpio_set_level(MOTOR_A_H, 0);
+    //     gpio_set_level(MOTOR_B_H, 0);
+    //     gpio_set_level(MOTOR_A_L, 1);
+
+    //     vTaskDelay(pdMS_TO_TICKS(100));
+
+    //     gpio_set_level(MOTOR_B_L, 0);
+    //     gpio_set_level(MOTOR_A_H, 0);
+    //     gpio_set_level(MOTOR_B_H, 1);
+    //     gpio_set_level(MOTOR_A_L, 1);
+
+    //     vTaskDelay(pdMS_TO_TICKS(4000));
+        
+    //     // Braking
+    //     gpio_set_level(MOTOR_B_L, 1);
+    //     gpio_set_level(MOTOR_A_H, 0);
+    //     gpio_set_level(MOTOR_B_H, 0);
+    //     gpio_set_level(MOTOR_A_L, 1);
+
+    //     vTaskDelay(pdMS_TO_TICKS(100));
+    // }
 }
 
 void app_main(void)
 {
     xTaskCreate(display_task, "display_task", DISPLAY_TASK_STACK_SIZE, NULL, DISPLAY_TASK_PRIORITY, NULL);
-    xTaskCreate(test_motor_task, "test_motor_task", DISPLAY_TASK_STACK_SIZE, NULL, DISPLAY_TASK_PRIORITY, NULL);
+    xTaskCreate(motor_task, "motor_task", DISPLAY_TASK_STACK_SIZE, NULL, DISPLAY_TASK_PRIORITY, NULL);
     vTaskDelete(NULL);
 }
