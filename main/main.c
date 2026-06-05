@@ -325,13 +325,14 @@ void test_motor_task(void *arg){
         gpio_set_level(MOTOR_A_L, 0);
 
         vTaskDelay(pdMS_TO_TICKS(4000));
-
+        
+        // Braking
         gpio_set_level(MOTOR_B_L, 0);
-        gpio_set_level(MOTOR_A_H, 0);
-        gpio_set_level(MOTOR_B_H, 0);
+        gpio_set_level(MOTOR_A_H, 1);
+        gpio_set_level(MOTOR_B_H, 1);
         gpio_set_level(MOTOR_A_L, 0);
 
-        vTaskDelay(pdMS_TO_TICKS(1200));
+        vTaskDelay(pdMS_TO_TICKS(100));
 
         gpio_set_level(MOTOR_B_L, 0);
         gpio_set_level(MOTOR_A_H, 0);
@@ -339,13 +340,14 @@ void test_motor_task(void *arg){
         gpio_set_level(MOTOR_A_L, 1);
 
         vTaskDelay(pdMS_TO_TICKS(4000));
-
+        
+        // Braking
         gpio_set_level(MOTOR_B_L, 0);
-        gpio_set_level(MOTOR_A_H, 0);
-        gpio_set_level(MOTOR_B_H, 0);
+        gpio_set_level(MOTOR_A_H, 1);
+        gpio_set_level(MOTOR_B_H, 1);
         gpio_set_level(MOTOR_A_L, 0);
 
-        vTaskDelay(pdMS_TO_TICKS(1200));
+        vTaskDelay(pdMS_TO_TICKS(100));
         
     }
 }
