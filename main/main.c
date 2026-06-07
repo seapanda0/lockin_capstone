@@ -19,6 +19,7 @@
 #include "lvgl.h"
 #include "ui.h"
 #include "screen_swipe.h"
+#include "app_logic.h"
 #include "connections.h"
 
 static const char *TAG = "ST7789";
@@ -29,7 +30,6 @@ static const char *TAG = "ST7789";
 #define MOTOR_TASK_PRIORITY    2
 #define CONNECTIONS_TASK_STACK_SIZE  (10 * 1024)
 #define CONNECTIONS_TASK_PRIORITY    2
-
 
 static void display_task(void *arg);
 
@@ -235,10 +235,10 @@ static void my_touchpad_read(lv_indev_t * indev, lv_indev_data_t * data) {
     if(touched) {
         data->state = LV_INDEV_STATE_PR;
         
-        // Proper Matrix: X correlates to the physical long-edge (y_raw)
-        // Y correlates to the physical short-edge (x_raw)
-        data->point.x = 320 - y_raw;
-        data->point.y = x_raw;
+        // For Portrait (90 degrees clockwise rotation relative to previous 320x240 landscape):
+        // Map directly to portrait dimensions (240x320)
+        data->point.x = x_raw;
+        data->point.y = y_raw;
         
     } else {
         data->state = LV_INDEV_STATE_REL;
@@ -265,30 +265,30 @@ static void display_task(void *arg)
     // Initialize SPI Hardware Pins
     spi_master_init(&s_dev, LCD_SDA, LCD_SCK, LCD_CS, LCD_WR, LCD_RESET, LCD_BL);
 
-    // Initialize the display using horizontal dimensions (320x240)
-    lcdInit(&s_dev, 320, 240, CONFIG_OFFSETX, CONFIG_OFFSETY);
+    // Initialize the display using vertical dimensions (240x320)
+    lcdInit(&s_dev, 240, 320, CONFIG_OFFSETX, CONFIG_OFFSETY);
 
-    // Force Hardware Landscape Rotation (MADCTL) with RGB mapping
+    // Force Hardware Portrait Rotation (MADCTL) with RGB mapping
     spi_master_write_command(&s_dev, 0x36);
-    spi_master_write_data_byte(&s_dev, 0xA0);
+    spi_master_write_data_byte(&s_dev, 0x00);
 
     // Force Color Inversion OFF
     lcdInversionOff(&s_dev);
 
     lv_init();
 
-    // Create display
-    lv_display_t *display = lv_display_create(320, 240);
+    // Create display in portrait mode
+    lv_display_t *display = lv_display_create(240, 320);
     lv_display_set_default(display);
     lv_display_set_user_data(display, &s_dev);
 
     // Allocate and set draw buffers
     static lv_color_t *buf1 = NULL;
     if (!buf1) {
-        buf1 = heap_caps_malloc(320 * 40 * sizeof(lv_color_t), MALLOC_CAP_DMA);
+        buf1 = heap_caps_malloc(240 * 40 * sizeof(lv_color_t), MALLOC_CAP_DMA);
         assert(buf1 != NULL);
     }
-    lv_display_set_buffers(display, buf1, NULL, 320 * 40 * sizeof(lv_color_t), LV_DISPLAY_RENDER_MODE_PARTIAL);
+    lv_display_set_buffers(display, buf1, NULL, 240 * 40 * sizeof(lv_color_t), LV_DISPLAY_RENDER_MODE_PARTIAL);
 
     // Set color format and flush callback
     lv_display_set_color_format(display, LV_COLOR_FORMAT_RGB565);
@@ -304,6 +304,8 @@ static void display_task(void *arg)
     ui_init();
     // Initialize swipe navigation (attach gesture handlers)
     swipe_init();
+    // Initialize app logic (pomodoro period display, etc.)
+    app_logic_init();
 
     // Main LVGL loop
     while (1) {

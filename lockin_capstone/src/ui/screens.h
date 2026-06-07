@@ -23,12 +23,12 @@ typedef struct _objects_t {
     lv_obj_t *clock;
     lv_obj_t *alarm;
     lv_obj_t *settings;
-    lv_obj_t *button_10min;
-    lv_obj_t *button_15min;
-    lv_obj_t *button_25min;
-    lv_obj_t *button_10s;
+    lv_obj_t *minus_button;
+    lv_obj_t *plus_button;
     lv_obj_t *obj0;
     lv_obj_t *time_text;
+    lv_obj_t *pomo_start_button;
+    lv_obj_t *obj1;
 } objects_t;
 
 extern objects_t objects;

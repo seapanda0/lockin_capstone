@@ -14,7 +14,8 @@ extern "C" {
 
 enum FlowGlobalVariables {
     FLOW_GLOBAL_VARIABLE_TIMER_ARC_VALUE = 0,
-    FLOW_GLOBAL_VARIABLE_DISPLAY_TEXT_STR = 1
+    FLOW_GLOBAL_VARIABLE_DISPLAY_TEXT_STR = 1,
+    FLOW_GLOBAL_VARIABLE_POMO_TIM_PERIOD_STR = 2
 };
 
 // Native global variables
@@ -23,6 +24,8 @@ extern int32_t get_var_timer_arc_value();
 extern void set_var_timer_arc_value(int32_t value);
 extern const char *get_var_display_text_str();
 extern void set_var_display_text_str(const char *value);
+extern const char *get_var_pomo_tim_period_str();
+extern void set_var_pomo_tim_period_str(const char *value);
 
 #ifdef __cplusplus
 }

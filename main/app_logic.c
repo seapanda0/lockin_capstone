@@ -32,8 +32,12 @@ void stop_timer();
 // ============= Variable Storage =============
 static int32_t timer_arc_value = 0;
 
-// Display text for remaining time (MM:SS or "10s")
+// Display text for remaining time (MM:SS)
 static char timer_display_text[16] = "";
+
+// Pomodoro period (duration to set), in seconds
+static uint32_t pomo_tim_period_sec = 25 * 60;  // default 25 minutes
+static char pomo_tim_period_str[16] = "";
 
 // Getter/Setter for timer_arc_value (called by generated UI)
 int32_t get_var_timer_arc_value() {
@@ -55,6 +59,26 @@ void set_var_display_text_str(const char *value) {
     }
     strncpy(timer_display_text, value, sizeof(timer_display_text) - 1);
     timer_display_text[sizeof(timer_display_text) - 1] = '\0';
+}
+
+const char *get_var_pomo_tim_period_str() {
+    return pomo_tim_period_str;
+}
+
+void set_var_pomo_tim_period_str(const char *value) {
+    if (value == NULL) {
+        pomo_tim_period_str[0] = '\0';
+        return;
+    }
+    strncpy(pomo_tim_period_str, value, sizeof(pomo_tim_period_str) - 1);
+    pomo_tim_period_str[sizeof(pomo_tim_period_str) - 1] = '\0';
+}
+
+static void update_pomo_period_display() {
+    uint32_t mins = pomo_tim_period_sec / 60;
+    char buf[16];
+    snprintf(buf, sizeof(buf), "%u", (unsigned)mins);
+    set_var_pomo_tim_period_str(buf);
 }
 
 // ============= Arc Update Helper =============
@@ -161,21 +185,55 @@ uint32_t get_remaining_time() {
     return pomodoro.remaining_sec;
 }
 
+void app_logic_init() {
+    // Initialize the period display on startup
+    update_pomo_period_display();
+}
+
 // ============= EEZ Studio Action Handlers =============
 
 /**
- * Action handler for "10 second" button click
- * Called by EEZ Studio-generated UI when the 10s button is pressed
+ * Increment the pomo period by 1 minute (min 1 min, max 60 min)
  */
-void action_button_10s_pressed(lv_event_t * e) {
+void action_button_plus_pressed(lv_event_t * e) {
     (void)e;  // unused
     
-    ESP_LOGI(TAG, "10 second button pressed");
+    if (pomodoro.running) {
+        ESP_LOGW(TAG, "Cannot change period while timer is running");
+        return;
+    }
     
-    // Start a 10-second timer
-    start_timer(10);
+    if (pomo_tim_period_sec + 5 * 60 <= 60 * 60) {  // max 60 minutes
+        pomo_tim_period_sec += 5 * 60;  // increment by 5 minutes
+        update_pomo_period_display();
+        ESP_LOGI(TAG, "Pomo period increased to %u minutes", pomo_tim_period_sec / 60);
+    }
 }
 
-// Note: Implement other button handlers (15 min, 25 min, etc.) similarly when needed
-// void action_button_15m_pressed(lv_event_t * e) { start_timer(15 * 60); }
-// void action_button_25m_pressed(lv_event_t * e) { start_timer(25 * 60); }
+/**
+ * Decrement the pomo period by 5 minutes (min 5 min, max 60 min)
+ */
+void action_button_minus_pressed(lv_event_t * e) {
+    (void)e;  // unused
+    
+    if (pomodoro.running) {
+        ESP_LOGW(TAG, "Cannot change period while timer is running");
+        return;
+    }
+    
+    if (pomo_tim_period_sec > 5 * 60) {  // min 5 minutes
+        pomo_tim_period_sec -= 5 * 60;  // decrement by 5 minutes
+        update_pomo_period_display();
+        ESP_LOGI(TAG, "Pomo period decreased to %u minutes", pomo_tim_period_sec / 60);
+    }
+}
+
+/**
+ * Start the pomodoro timer with the selected period
+ */
+void action_button_start_pomo_pressed(lv_event_t * e) {
+    (void)e;  // unused
+    
+    ESP_LOGI(TAG, "Start pomodoro button pressed; duration=%u seconds", pomo_tim_period_sec);
+    start_timer(pomo_tim_period_sec);
+}

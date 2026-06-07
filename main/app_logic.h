@@ -30,13 +30,40 @@ bool is_timer_running();
  */
 uint32_t get_remaining_time();
 
+/**
+ * Initialize app logic (call on startup)
+ */
+void app_logic_init();
+
+// ============= UI Variable Getters/Setters =============
+
+/**
+ * Get the pomodoro period display string (e.g., "25 min")
+ */
+const char *get_var_pomo_tim_period_str();
+
+/**
+ * Set the pomodoro period display string
+ */
+void set_var_pomo_tim_period_str(const char *value);
+
 // ============= EEZ Studio Action Handlers =============
 // These are called by the generated UI
 
 /**
- * Action handler for "10 second" button click
+ * Increment pomodoro period by 1 minute
  */
-void action_button_10s_pressed(lv_event_t * e);
+void action_button_plus_pressed(lv_event_t * e);
+
+/**
+ * Decrement pomodoro period by 1 minute
+ */
+void action_button_minus_pressed(lv_event_t * e);
+
+/**
+ * Start the pomodoro timer with selected period
+ */
+void action_button_start_pomo_pressed(lv_event_t * e);
 
 #ifdef __cplusplus
 }

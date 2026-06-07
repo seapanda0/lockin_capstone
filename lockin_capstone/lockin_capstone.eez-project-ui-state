@@ -25,7 +25,7 @@
           },
           {
             "type": "border",
-            "selected": 1,
+            "selected": 0,
             "size": 61.5,
             "location": "right",
             "children": [
@@ -121,13 +121,12 @@
             {
               "type": "row",
               "id": "#1c01432c-f0ed-4d59-917f-d9dc6a466cfa",
-              "weight": 26.062585609044206,
+              "weight": 18.221647600071286,
               "children": [
                 {
                   "type": "tabset",
                   "id": "#af60ef06-65c2-4a6e-947b-937200adf32e",
                   "weight": 1,
-                  "selected": 2,
                   "enableClose": false,
                   "children": [
                     {
@@ -193,14 +192,13 @@
             {
               "type": "tabset",
               "id": "EDITORS",
-              "weight": 33.778082293681756,
-              "selected": 1,
+              "weight": 46.407398570574294,
               "enableDeleteWhenEmpty": false,
               "enableClose": false,
               "children": [
                 {
                   "type": "tab",
-                  "id": "#73d669c5-1c3b-416f-84d8-9c9ba77006e8",
+                  "id": "#4dd0c1cd-7661-4e01-821d-1704e051a3a7",
                   "name": "Settings",
                   "component": "editor",
                   "config": {
@@ -209,6 +207,17 @@
                     "permanent": false
                   },
                   "icon": "material:settings"
+                },
+                {
+                  "type": "tab",
+                  "id": "#49d56901-5fa1-4bcf-ad59-88abfb003662",
+                  "name": "Clock",
+                  "component": "editor",
+                  "config": {
+                    "objectPath": "[lockin_capstone.eez-project]:/userPages/1",
+                    "permanent": false
+                  },
+                  "icon": "svg:page"
                 },
                 {
                   "type": "tab",
@@ -227,12 +236,12 @@
             {
               "type": "row",
               "id": "#a59f865c-1a2d-4400-b0f6-4f26c37743a1",
-              "weight": 40.159332097274024,
+              "weight": 35.370953829354406,
               "children": [
                 {
                   "type": "tabset",
                   "id": "#7756ed54-543f-422b-8fbf-b9e60fee0b97",
-                  "weight": 1.942046855733662,
+                  "weight": 1.7197231833910034,
                   "children": [
                     {
                       "type": "tab",
@@ -247,7 +256,7 @@
                 {
                   "type": "tabset",
                   "id": "#84d0c87e-f60c-49d6-8b32-574cbcdf9b94",
-                  "weight": 1.057953144266338,
+                  "weight": 1.2802768166089966,
                   "children": [
                     {
                       "type": "tab",
@@ -1089,8 +1098,31 @@
         "0": {
           "0": {},
           "1": {},
-          "2": {},
-          "3": {}
+          "4": {}
+        }
+      },
+      "transform": {
+        "translate": {
+          "x": -193.68956056038525,
+          "y": -167.2098484848483
+        },
+        "scale": 1.5
+      },
+      "timeline": {
+        "isEditorActive": false,
+        "position": 0,
+        "secondToPx": 200,
+        "scrollLeft": 0
+      }
+    },
+    "[lockin_capstone.eez-project]:/userPages/1[flow-state]": {
+      "selectionFront": {},
+      "selectionBack": {
+        "0": {
+          "0": {},
+          "1": {
+            "$selected": true
+          }
         }
       },
       "transform": {
@@ -1098,7 +1130,50 @@
           "x": -160,
           "y": -120
         },
-        "scale": 1
+        "scale": 1.5
+      },
+      "timeline": {
+        "isEditorActive": false,
+        "position": 0,
+        "secondToPx": 200,
+        "scrollLeft": 0
+      }
+    },
+    "[lockin_capstone.eez-project]:/userPages/2[flow-state]": {
+      "selectionFront": {},
+      "selectionBack": {
+        "0": {
+          "0": {},
+          "1": {
+            "$selected": true
+          }
+        }
+      },
+      "transform": {
+        "translate": {
+          "x": -160,
+          "y": -120
+        },
+        "scale": 0.9
+      },
+      "timeline": {
+        "isEditorActive": false,
+        "position": 0,
+        "secondToPx": 200,
+        "scrollLeft": 0
+      }
+    },
+    "[lockin_capstone.eez-project]:/userPages/3[flow-state]": {
+      "selectionFront": {},
+      "selectionBack": {
+        "0": {}
+      },
+      "transform": {
+        "translate": {
+          "x": -160,
+          "y": -120
+        },
+        "scale": 0.9
       },
       "timeline": {
         "isEditorActive": false,
@@ -1120,14 +1195,15 @@
   "showComponentDescriptions": true,
   "logsPanelFilter": "all",
   "selectedStylePropertyName": "",
-  "lvglPart": "INDICATOR",
+  "lvglPart": "MAIN",
   "lvglState": "DEFAULT",
   "lvglExpandedPropertiesGroup": [
-    "POSITION AND SIZE",
+    "ARC",
+    "BACKGROUND",
     "TEXT"
   ],
   "showInactiveFlowsInDebugger": true,
   "globalFlowZoom": true,
-  "flowZoom": 1,
+  "flowZoom": 1.5,
   "implementationLanguage": "C"
 }
