@@ -13,6 +13,7 @@
 #include "driver/i2c_master.h"
 #include "driver/gpio.h"
 #include "driver/mcpwm_prelude.h"
+#include "driver/ledc.h"
 
 #include "pinout.h"
 #include "st7789.h"
@@ -23,6 +24,7 @@
 #include "connections.h"
 
 static const char *TAG = "ST7789";
+static volatile bool g_gui_ready = false;
 
 #define DISPLAY_TASK_STACK_SIZE  (10 * 1024)
 #define DISPLAY_TASK_PRIORITY    5
@@ -262,8 +264,8 @@ static void display_task(void *arg)
     // Change SPI Clock Frequency
     spi_clock_speed(40000000); // 40MHz
 
-    // Initialize SPI Hardware Pins
-    spi_master_init(&s_dev, LCD_SDA, LCD_SCK, LCD_CS, LCD_WR, LCD_RESET, LCD_BL);
+    // Initialize SPI Hardware Pins (passing -1 for BL pin so driver doesn't touch it)
+    spi_master_init(&s_dev, LCD_SDA, LCD_SCK, LCD_CS, LCD_WR, LCD_RESET, -1);
 
     // Initialize the display using vertical dimensions (240x320)
     lcdInit(&s_dev, 240, 320, CONFIG_OFFSETX, CONFIG_OFFSETY);
@@ -306,6 +308,9 @@ static void display_task(void *arg)
     swipe_init();
     // Initialize app logic (pomodoro period display, etc.)
     app_logic_init();
+
+    // Notify that the GUI has finished initialization
+    g_gui_ready = true;
 
     // Main LVGL loop
     while (1) {
@@ -464,10 +469,47 @@ void motor_task(void *arg){
     }
 }
 
+void backlight_task(void *pvParameters) {
+    // Wait for display_task to finish initializing GUI
+    while (!g_gui_ready) {
+        vTaskDelay(pdMS_TO_TICKS(50));
+    }
+    ESP_LOGI("BACKLIGHT", "GUI is ready! Initializing LEDC Backlight PWM on GPIO %d...", LCD_BL);
+
+    // Configure LEDC Timer
+    ledc_timer_config_t ledc_timer = {
+        .speed_mode       = LEDC_LOW_SPEED_MODE,
+        .timer_num        = LEDC_TIMER_0,
+        .duty_resolution  = LEDC_TIMER_10_BIT, // 10-bit resolution (0-1023)
+        .freq_hz          = 1000,              // 1 kHz frequency
+        .clk_cfg          = LEDC_AUTO_CLK
+    };
+    ledc_timer_config(&ledc_timer);
+
+    // Configure LEDC Channel
+    uint32_t duty = (70 * 1023) / 100; // 70% of 1023 = ~716
+    ledc_channel_config_t ledc_channel = {
+        .speed_mode     = LEDC_LOW_SPEED_MODE,
+        .channel        = LEDC_CHANNEL_0,
+        .timer_sel      = LEDC_TIMER_0,
+        .intr_type      = LEDC_INTR_DISABLE,
+        .gpio_num       = LCD_BL,
+        .duty           = duty,
+        .hpoint         = 0
+    };
+    ledc_channel_config(&ledc_channel);
+
+    ESP_LOGI("BACKLIGHT", "Brightness set to constant 70%% (duty: %lu)", (unsigned long)duty);
+    
+    // Deleting the task as we no longer need to update the duty cycle
+    vTaskDelete(NULL);
+}
+
 void app_main(void)
 {
     xTaskCreate(display_task, "display_task", DISPLAY_TASK_STACK_SIZE, NULL, DISPLAY_TASK_PRIORITY, NULL);
     xTaskCreate(motor_task, "motor_task", DISPLAY_TASK_STACK_SIZE, NULL, DISPLAY_TASK_PRIORITY, NULL);
     xTaskCreate(connections_init, "connection_task", CONNECTIONS_TASK_STACK_SIZE, NULL, CONNECTIONS_TASK_PRIORITY, NULL);
+    xTaskCreate(backlight_task, "backlight_task", 4 * 1024, NULL, 2, NULL);
     vTaskDelete(NULL);
 }

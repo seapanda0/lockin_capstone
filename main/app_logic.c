@@ -109,7 +109,9 @@ static void timer_callback(TimerHandle_t xTimer) {
     if (pomodoro.remaining_sec > 0) {
         pomodoro.remaining_sec--;
         update_arc_display();
-        ESP_LOGI(TAG, "Timer: %u seconds remaining", pomodoro.remaining_sec);
+        if (pomodoro.remaining_sec % 60 == 0) {
+            ESP_LOGI(TAG, "Timer: %u seconds remaining", pomodoro.remaining_sec);
+        }
     } else {
         // Timer finished
         pomodoro.running = false;
@@ -118,6 +120,16 @@ static void timer_callback(TimerHandle_t xTimer) {
         set_var_timer_arc_value(0);
         set_var_start_end_str("Start");
         update_pomo_period_display();
+        
+        // Restore button color and text
+        if (objects.pomo_start_end_button != NULL) {
+            lv_obj_remove_local_style_prop(objects.pomo_start_end_button, LV_STYLE_BG_COLOR, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_invalidate(objects.pomo_start_end_button);
+            lv_obj_t *label = lv_obj_get_child(objects.pomo_start_end_button, 0);
+            if (label != NULL) {
+                lv_label_set_text(label, "Start");
+            }
+        }
     }
 }
 
@@ -153,6 +165,16 @@ void start_timer(uint32_t duration_seconds) {
         xTimerStart(pomodoro.timer_handle, 0);
         update_arc_display();
         set_var_start_end_str("Stop");
+        
+        // Set button color to red and text to Stop
+        if (objects.pomo_start_end_button != NULL) {
+            lv_obj_set_style_bg_color(objects.pomo_start_end_button, lv_palette_main(LV_PALETTE_RED), LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_t *label = lv_obj_get_child(objects.pomo_start_end_button, 0);
+            if (label != NULL) {
+                lv_label_set_text(label, "Stop");
+            }
+        }
+        
         ESP_LOGI(TAG, "Timer started: %u seconds", duration_seconds);
     } else {
         ESP_LOGE(TAG, "Failed to create FreeRTOS timer");
@@ -173,6 +195,17 @@ void stop_timer() {
     set_var_timer_arc_value(0);
     set_var_start_end_str("Start");
     update_pomo_period_display();
+    
+    // Restore button color and text
+    if (objects.pomo_start_end_button != NULL) {
+        lv_obj_remove_local_style_prop(objects.pomo_start_end_button, LV_STYLE_BG_COLOR, LV_PART_MAIN | LV_STATE_DEFAULT);
+        lv_obj_invalidate(objects.pomo_start_end_button);
+        lv_obj_t *label = lv_obj_get_child(objects.pomo_start_end_button, 0);
+        if (label != NULL) {
+            lv_label_set_text(label, "Start");
+        }
+    }
+    
     ESP_LOGI(TAG, "Timer stopped");
 }
 
