@@ -309,6 +309,43 @@ static void display_task(void *arg)
 #define TIMER_RESOLUTION 80000000 // 80Mhz which is half of the 160Mhz source used
 #define COUNTER_PERIOD 8000 // 8000 ticks for 10kHz PWM
 
+mcpwm_cmpr_handle_t cmp_m_a_h, cmp_m_a_l, cmp_m_b_h, cmp_m_b_l;
+mcpwm_gen_handle_t gen_m_a_h, gen_m_a_l, gen_m_b_h, gen_m_b_l;
+
+void motor_brake(){
+    //     // Braking
+    //     gpio_set_level(MOTOR_B_L, 1);
+    //     gpio_set_level(MOTOR_A_H, 0);
+    //     gpio_set_level(MOTOR_B_H, 0);
+    //     gpio_set_level(MOTOR_A_L, 1);
+    mcpwm_comparator_set_compare_value(cmp_m_a_h, 0);
+    mcpwm_comparator_set_compare_value(cmp_m_b_h, 0);
+    mcpwm_comparator_set_compare_value(cmp_m_b_l, COUNTER_PERIOD);
+    mcpwm_comparator_set_compare_value(cmp_m_a_l, COUNTER_PERIOD);
+}
+
+void motor_turn_cw(uint32_t cmpr_value){
+    if (cmpr_value > COUNTER_PERIOD){
+        cmpr_value = COUNTER_PERIOD;
+    }
+
+    mcpwm_comparator_set_compare_value(cmp_m_a_h, cmpr_value);
+    mcpwm_comparator_set_compare_value(cmp_m_b_h, 0);
+    mcpwm_comparator_set_compare_value(cmp_m_b_l, cmpr_value);
+    mcpwm_comparator_set_compare_value(cmp_m_a_l, 0);   
+}
+
+
+void motor_turn_ccw(uint32_t cmpr_value){
+    if (cmpr_value > COUNTER_PERIOD){
+        cmpr_value = COUNTER_PERIOD;
+    }
+
+    mcpwm_comparator_set_compare_value(cmp_m_a_h, 0);
+    mcpwm_comparator_set_compare_value(cmp_m_b_h, cmpr_value);
+    mcpwm_comparator_set_compare_value(cmp_m_b_l, 0);
+    mcpwm_comparator_set_compare_value(cmp_m_a_l, cmpr_value);   
+}
 void motor_task(void *arg){
 
     mcpwm_timer_handle_t timer0 = NULL;
@@ -336,7 +373,6 @@ void motor_task(void *arg){
     // m_a_h & m_b_l -> operator0
     // m_a_l & m_b_h -> operator1
 
-    mcpwm_cmpr_handle_t cmp_m_a_h = NULL, cmp_m_a_l = NULL, cmp_m_b_h = NULL, cmp_m_b_l = NULL;
     mcpwm_comparator_config_t comparator_config = {
         .flags.update_cmp_on_tep = true
     };
@@ -346,7 +382,6 @@ void motor_task(void *arg){
     mcpwm_new_comparator(operator1, &comparator_config, &cmp_m_a_l);
     mcpwm_new_comparator(operator1, &comparator_config, &cmp_m_b_h);
 
-    mcpwm_gen_handle_t gen_m_a_h = NULL, gen_m_a_l = NULL, gen_m_b_h = NULL, gen_m_b_l = NULL;
     mcpwm_generator_config_t gen_m_a_h_config = {.gen_gpio_num = MOTOR_A_H};
     mcpwm_generator_config_t gen_m_a_l_config = {.gen_gpio_num = MOTOR_A_L};
     mcpwm_generator_config_t gen_m_b_h_config = {.gen_gpio_num = MOTOR_B_H};
@@ -354,34 +389,65 @@ void motor_task(void *arg){
 
     mcpwm_new_generator(operator0, &gen_m_a_h_config, &gen_m_a_h);
     mcpwm_new_generator(operator0, &gen_m_b_l_config, &gen_m_b_l);
-    // mcpwm_new_generator(operator1, &gen_m_a_l_config, &gen_m_a_l);
-    // mcpwm_new_generator(operator1, &gen_m_b_h_config, &gen_m_b_h);
+    mcpwm_new_generator(operator1, &gen_m_a_l_config, &gen_m_a_l);
+    mcpwm_new_generator(operator1, &gen_m_b_h_config, &gen_m_b_h);
 
     ESP_ERROR_CHECK(mcpwm_generator_set_action_on_timer_event(gen_m_a_h,
                     MCPWM_GEN_TIMER_EVENT_ACTION(MCPWM_TIMER_DIRECTION_UP, MCPWM_TIMER_EVENT_EMPTY, MCPWM_GEN_ACTION_HIGH)));
     ESP_ERROR_CHECK(mcpwm_generator_set_action_on_compare_event(gen_m_a_h,
                     MCPWM_GEN_COMPARE_EVENT_ACTION(MCPWM_TIMER_DIRECTION_UP, cmp_m_a_h, MCPWM_GEN_ACTION_LOW)));
     
+    ESP_ERROR_CHECK(mcpwm_generator_set_action_on_timer_event(gen_m_a_l,
+                    MCPWM_GEN_TIMER_EVENT_ACTION(MCPWM_TIMER_DIRECTION_UP, MCPWM_TIMER_EVENT_EMPTY, MCPWM_GEN_ACTION_HIGH)));
+    ESP_ERROR_CHECK(mcpwm_generator_set_action_on_compare_event(gen_m_a_l,
+                    MCPWM_GEN_COMPARE_EVENT_ACTION(MCPWM_TIMER_DIRECTION_UP, cmp_m_a_l, MCPWM_GEN_ACTION_LOW)));
+    
+    ESP_ERROR_CHECK(mcpwm_generator_set_action_on_timer_event(gen_m_b_h,
+                    MCPWM_GEN_TIMER_EVENT_ACTION(MCPWM_TIMER_DIRECTION_UP, MCPWM_TIMER_EVENT_EMPTY, MCPWM_GEN_ACTION_HIGH)));
+    ESP_ERROR_CHECK(mcpwm_generator_set_action_on_compare_event(gen_m_b_h,
+                    MCPWM_GEN_COMPARE_EVENT_ACTION(MCPWM_TIMER_DIRECTION_UP, cmp_m_b_h, MCPWM_GEN_ACTION_LOW)));
+    
     ESP_ERROR_CHECK(mcpwm_generator_set_action_on_timer_event(gen_m_b_l,
                     MCPWM_GEN_TIMER_EVENT_ACTION(MCPWM_TIMER_DIRECTION_UP, MCPWM_TIMER_EVENT_EMPTY, MCPWM_GEN_ACTION_HIGH)));
     ESP_ERROR_CHECK(mcpwm_generator_set_action_on_compare_event(gen_m_b_l,
                     MCPWM_GEN_COMPARE_EVENT_ACTION(MCPWM_TIMER_DIRECTION_UP, cmp_m_b_l, MCPWM_GEN_ACTION_LOW)));
-    
 
+    mcpwm_dead_time_config_t dead_time_config = {
+        .posedge_delay_ticks = 50,
+        .negedge_delay_ticks = 0,
+    };
+    // apply deadtime to gen_m_b_l and gen_m_a_l
+    ESP_ERROR_CHECK(mcpwm_generator_set_dead_time(gen_m_b_l, gen_m_b_l, &dead_time_config));
+    ESP_ERROR_CHECK(mcpwm_generator_set_dead_time(gen_m_a_l, gen_m_a_l, &dead_time_config));
+
+    // bypass deadtime module for gen_m_a_h and gen_m_b_h
+    dead_time_config.posedge_delay_ticks = 0;
+    ESP_ERROR_CHECK(mcpwm_generator_set_dead_time(gen_m_b_h, gen_m_b_h, &dead_time_config));
+    ESP_ERROR_CHECK(mcpwm_generator_set_dead_time(gen_m_a_h, gen_m_a_h, &dead_time_config));
+    
     mcpwm_comparator_set_compare_value(cmp_m_a_h, 0);
     mcpwm_comparator_set_compare_value(cmp_m_a_l, 0);
-    // mcpwm_comparator_set_compare_value(cmp_m_b_h, 0);
-    // mcpwm_comparator_set_compare_value(cmp_m_b_l, 0);
+    mcpwm_comparator_set_compare_value(cmp_m_b_h, 0);
+    mcpwm_comparator_set_compare_value(cmp_m_b_l, 0);
 
     mcpwm_timer_enable(timer0);
     mcpwm_timer_start_stop(timer0, MCPWM_TIMER_START_NO_STOP);
 
     while(1){
         for(int i = 1000; i <= 8000; i += 1000){
-            mcpwm_comparator_set_compare_value(cmp_m_a_h, i);
-            mcpwm_comparator_set_compare_value(cmp_m_b_l, i);
-            ESP_LOGI(TAG, "compare value i = %d", i);
+            motor_turn_ccw(i);
             vTaskDelay(pdMS_TO_TICKS(1000));
+            
+            motor_brake();
+            vTaskDelay(pdMS_TO_TICKS(1000));
+
+            motor_turn_cw(i);
+            vTaskDelay(pdMS_TO_TICKS(1000));
+
+            motor_brake();
+            vTaskDelay(pdMS_TO_TICKS(1000));
+
+            ESP_LOGI(TAG, "compare value i = %d", i);
         }
     }
     
