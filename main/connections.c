@@ -337,11 +337,89 @@ static void sync_time(void) {
 
 // ── Firestore push ────────────────────────────────────────────────────────
 
-// Firestore blink reporting removed for boards without an LED.
+static void firestore_push_blink(int blink_count, bool led_on) {
+    // 1. Get current timestamp
+    time_t now;
+    time(&now);
+    long long timestamp_ms = (long long)now * 1000;
 
-// Blink task removed for boards without an onboard LED.
+    // 2. Get RSSI correctly
+    int rssi = 0;
+    esp_wifi_sta_get_rssi(&rssi);
 
-// ── app_main ──────────────────────────────────────────────────────────────
+    // 3. Prepare strings for the JSON
+    char body[512];
+    char ts_str[32];
+    char count_str[16];
+    snprintf(ts_str, sizeof(ts_str), "%lld", timestamp_ms);
+    snprintf(count_str, sizeof(count_str), "%d", blink_count);
+
+    // 4. Build the JSON body
+    snprintf(body, sizeof(body),
+        "{"
+          "\"fields\":{"
+            "\"timestamp\":{\"integerValue\":\"%s\"},"
+            "\"blink_count\":{\"integerValue\":\"%s\"},"
+            "\"led_state\":{\"booleanValue\":%s},"
+            "\"wifi_rssi\":{\"integerValue\":\"%d\"},"
+            "\"free_heap_bytes\":{\"integerValue\":\"%d\"},"
+            "\"uptime_seconds\":{\"integerValue\":\"%d\"}"
+          "}"
+        "}",
+        ts_str,
+        count_str,
+        led_on ? "true" : "false",
+        rssi,
+        (int)esp_get_free_heap_size(), // heap
+        (int)(esp_timer_get_time() / 1000000) // uptime in seconds
+    ); 
+
+    // 5. Build URL
+    char url[512];
+    snprintf(url, sizeof(url),
+        "https://firestore.googleapis.com/v1/projects/%s"
+        "/databases/(default)/documents/diagnostics",
+        FIRESTORE_PROJECT_ID);
+
+    // 6. HTTP POST CONFIGURATION (FIXED: Using crt_bundle_attach and 20s timeout)
+    esp_http_client_config_t config = {
+        .url               = url,
+        .method            = HTTP_METHOD_POST,
+        .timeout_ms        = 20000,
+        .cert_pem          = google_root_ca_pem_start,
+    };
+
+    esp_http_client_handle_t client = esp_http_client_init(&config);
+    esp_http_client_set_header(client, "Content-Type", "application/json");
+    esp_http_client_set_post_field(client, body, strlen(body));
+
+    esp_err_t err = esp_http_client_perform(client);
+    if (err == ESP_OK) {
+        ESP_LOGI(TAG, "Firestore ✓ blink=%d led=%s HTTP=%d",
+                 blink_count,
+                 led_on ? "ON" : "OFF",
+                 esp_http_client_get_status_code(client));
+    } else {
+        ESP_LOGE(TAG, "Firestore ✗ %s", esp_err_to_name(err));
+    }
+    esp_http_client_cleanup(client);
+}
+
+#define FIREBASE_TASK_PRIORITY 2
+#define FIREBASE_TASK_STACK_SIZE (1024 * 5)
+
+// ── Blink task ────────────────────────────────────────────────────────────
+static void firebase_task(void *arg) {
+
+    int blink_count = 0;
+
+    while (true) {
+        blink_count++;
+        firestore_push_blink(blink_count, true);
+        vTaskDelay(pdMS_TO_TICKS(5000));
+
+    }
+}
 
 void connections_init(void * arg) {
     // NVS init
@@ -382,8 +460,7 @@ void connections_init(void * arg) {
         if (connect_to_wifi(saved_ssid, saved_pass)) {
             ESP_LOGI(TAG, "Connected with saved credentials — starting main app");
             sync_time();
-            
-            // Blink task removed (no onboard LED on this board)
+            xTaskCreate(firebase_task, "firebase task", FIREBASE_TASK_STACK_SIZE, NULL, FIREBASE_TASK_PRIORITY, NULL);
             vTaskDelete(NULL);
             return;
         }
@@ -408,7 +485,6 @@ void connections_init(void * arg) {
     if (connect_to_wifi(s_pending_creds.ssid, s_pending_creds.password)) {
         ESP_LOGI(TAG, "Provisioning complete!");
         sync_time();                                    
-        
         
         // Blink task removed (no onboard LED on this board)
     } else {
