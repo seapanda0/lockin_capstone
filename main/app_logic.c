@@ -31,13 +31,11 @@ void stop_timer();
 
 // ============= Variable Storage =============
 static int32_t timer_arc_value = 0;
-
-// Display text for remaining time (MM:SS)
-static char timer_display_text[16] = "";
+static char display_tim_str[16] = "25:00";
+static char start_end_str[16] = "Start";
 
 // Pomodoro period (duration to set), in seconds
 static uint32_t pomo_tim_period_sec = 25 * 60;  // default 25 minutes
-static char pomo_tim_period_str[16] = "";
 
 // Getter/Setter for timer_arc_value (called by generated UI)
 int32_t get_var_timer_arc_value() {
@@ -48,45 +46,44 @@ void set_var_timer_arc_value(int32_t value) {
     timer_arc_value = value;
 }
 
-const char *get_var_display_text_str() {
-    return timer_display_text;
+const char *get_var_display_tim_str() {
+    return display_tim_str;
 }
 
-void set_var_display_text_str(const char *value) {
+void set_var_display_tim_str(const char *value) {
     if (value == NULL) {
-        timer_display_text[0] = '\0';
+        display_tim_str[0] = '\0';
         return;
     }
-    strncpy(timer_display_text, value, sizeof(timer_display_text) - 1);
-    timer_display_text[sizeof(timer_display_text) - 1] = '\0';
+    strncpy(display_tim_str, value, sizeof(display_tim_str) - 1);
+    display_tim_str[sizeof(display_tim_str) - 1] = '\0';
 }
 
-const char *get_var_pomo_tim_period_str() {
-    return pomo_tim_period_str;
+const char *get_var_start_end_str() {
+    return start_end_str;
 }
 
-void set_var_pomo_tim_period_str(const char *value) {
+void set_var_start_end_str(const char *value) {
     if (value == NULL) {
-        pomo_tim_period_str[0] = '\0';
+        start_end_str[0] = '\0';
         return;
     }
-    strncpy(pomo_tim_period_str, value, sizeof(pomo_tim_period_str) - 1);
-    pomo_tim_period_str[sizeof(pomo_tim_period_str) - 1] = '\0';
+    strncpy(start_end_str, value, sizeof(start_end_str) - 1);
+    start_end_str[sizeof(start_end_str) - 1] = '\0';
 }
 
 static void update_pomo_period_display() {
     uint32_t mins = pomo_tim_period_sec / 60;
     char buf[16];
-    snprintf(buf, sizeof(buf), "%u", (unsigned)mins);
-    set_var_pomo_tim_period_str(buf);
+    snprintf(buf, sizeof(buf), "%02u:00", (unsigned)mins);
+    set_var_display_tim_str(buf);
 }
 
 // ============= Arc Update Helper =============
 static void update_arc_display() {
     if (pomodoro.duration_sec == 0) {
         set_var_timer_arc_value(0);
-        // Update display text to 00:00
-        set_var_display_text_str("00:00");
+        set_var_display_tim_str("00:00");
         return;
     }
     // Calculate arc value: 0-100 based on remaining time
@@ -100,7 +97,7 @@ static void update_arc_display() {
     uint32_t secs = pomodoro.remaining_sec % 60;
     char buf[16];
     snprintf(buf, sizeof(buf), "%02u:%02u", (unsigned)mins, (unsigned)secs);
-    set_var_display_text_str(buf);
+    set_var_display_tim_str(buf);
 }
 
 // ============= FreeRTOS Timer Callback =============
@@ -119,6 +116,8 @@ static void timer_callback(TimerHandle_t xTimer) {
         xTimerStop(pomodoro.timer_handle, 0);
         ESP_LOGI(TAG, "Timer finished!");
         set_var_timer_arc_value(0);
+        set_var_start_end_str("Start");
+        update_pomo_period_display();
     }
 }
 
@@ -153,6 +152,7 @@ void start_timer(uint32_t duration_seconds) {
     if (pomodoro.timer_handle != NULL) {
         xTimerStart(pomodoro.timer_handle, 0);
         update_arc_display();
+        set_var_start_end_str("Stop");
         ESP_LOGI(TAG, "Timer started: %u seconds", duration_seconds);
     } else {
         ESP_LOGE(TAG, "Failed to create FreeRTOS timer");
@@ -171,6 +171,8 @@ void stop_timer() {
     pomodoro.remaining_sec = 0;
     pomodoro.duration_sec = 0;
     set_var_timer_arc_value(0);
+    set_var_start_end_str("Start");
+    update_pomo_period_display();
     ESP_LOGI(TAG, "Timer stopped");
 }
 
@@ -193,7 +195,7 @@ void app_logic_init() {
 // ============= EEZ Studio Action Handlers =============
 
 /**
- * Increment the pomo period by 1 minute (min 1 min, max 60 min)
+ * Increment the pomo period by 5 minutes (min 5 min, max 60 min)
  */
 void action_button_plus_pressed(lv_event_t * e) {
     (void)e;  // unused
@@ -229,11 +231,16 @@ void action_button_minus_pressed(lv_event_t * e) {
 }
 
 /**
- * Start the pomodoro timer with the selected period
+ * Start/stop the pomodoro timer with the selected period
  */
 void action_button_start_pomo_pressed(lv_event_t * e) {
     (void)e;  // unused
     
-    ESP_LOGI(TAG, "Start pomodoro button pressed; duration=%u seconds", pomo_tim_period_sec);
-    start_timer(pomo_tim_period_sec);
+    if (pomodoro.running) {
+        ESP_LOGI(TAG, "Stop pomodoro button pressed");
+        stop_timer();
+    } else {
+        ESP_LOGI(TAG, "Start pomodoro button pressed; duration=%u seconds", pomo_tim_period_sec);
+        start_timer(pomo_tim_period_sec);
+    }
 }

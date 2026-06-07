@@ -44,8 +44,8 @@ void create_screen_main() {
             // minus_button
             lv_obj_t *obj = lv_button_create(parent_obj);
             objects.minus_button = obj;
-            lv_obj_set_pos(obj, 4, 214);
-            lv_obj_set_size(obj, 73, 34);
+            lv_obj_set_pos(obj, 4, 201);
+            lv_obj_set_size(obj, 92, 47);
             lv_obj_add_event_cb(obj, action_button_minus_pressed, LV_EVENT_PRESSED, (void *)0);
             lv_obj_set_style_text_font(obj, &lv_font_montserrat_20, LV_PART_MAIN | LV_STATE_DEFAULT);
             {
@@ -63,8 +63,8 @@ void create_screen_main() {
             // plus_button
             lv_obj_t *obj = lv_button_create(parent_obj);
             objects.plus_button = obj;
-            lv_obj_set_pos(obj, 164, 214);
-            lv_obj_set_size(obj, 73, 34);
+            lv_obj_set_pos(obj, 144, 201);
+            lv_obj_set_size(obj, 92, 47);
             lv_obj_add_event_cb(obj, action_button_plus_pressed, LV_EVENT_PRESSED, (void *)0);
             lv_obj_set_style_text_font(obj, &lv_font_montserrat_20, LV_PART_MAIN | LV_STATE_DEFAULT);
             {
@@ -93,17 +93,17 @@ void create_screen_main() {
             // time_text
             lv_obj_t *obj = lv_label_create(parent_obj);
             objects.time_text = obj;
-            lv_obj_set_pos(obj, 77, 87);
+            lv_obj_set_pos(obj, 79, 87);
             lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
             lv_obj_set_style_text_font(obj, &lv_font_montserrat_30, LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_label_set_text(obj, "");
         }
         {
-            // pomo_start_button
+            // pomo_start_end_button
             lv_obj_t *obj = lv_button_create(parent_obj);
-            objects.pomo_start_button = obj;
-            lv_obj_set_pos(obj, 69, 264);
-            lv_obj_set_size(obj, 103, 34);
+            objects.pomo_start_end_button = obj;
+            lv_obj_set_pos(obj, 74, 264);
+            lv_obj_set_size(obj, 92, 47);
             lv_obj_add_event_cb(obj, action_button_start_pomo_pressed, LV_EVENT_PRESSED, (void *)0);
             {
                 lv_obj_t *parent_obj = obj;
@@ -116,21 +116,6 @@ void create_screen_main() {
                     lv_label_set_text_static(obj, "Start");
                 }
             }
-        }
-        {
-            lv_obj_t *obj = lv_label_create(parent_obj);
-            objects.obj1 = obj;
-            lv_obj_set_pos(obj, 91, 220);
-            lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
-            lv_obj_set_style_text_font(obj, &lv_font_montserrat_20, LV_PART_MAIN | LV_STATE_DEFAULT);
-            lv_label_set_text(obj, "");
-        }
-        {
-            lv_obj_t *obj = lv_label_create(parent_obj);
-            lv_obj_set_pos(obj, 116, 220);
-            lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
-            lv_obj_set_style_text_font(obj, &lv_font_montserrat_20, LV_PART_MAIN | LV_STATE_DEFAULT);
-            lv_label_set_text_static(obj, "Min");
         }
     }
     
@@ -148,20 +133,11 @@ void tick_screen_main() {
         }
     }
     {
-        const char *new_val = get_var_display_text_str();
+        const char *new_val = get_var_display_tim_str();
         const char *cur_val = lv_label_get_text(objects.time_text);
         if (strcmp(new_val, cur_val) != 0) {
             tick_value_change_obj = objects.time_text;
             lv_label_set_text(objects.time_text, new_val);
-            tick_value_change_obj = NULL;
-        }
-    }
-    {
-        const char *new_val = get_var_pomo_tim_period_str();
-        const char *cur_val = lv_label_get_text(objects.obj1);
-        if (strcmp(new_val, cur_val) != 0) {
-            tick_value_change_obj = objects.obj1;
-            lv_label_set_text(objects.obj1, new_val);
             tick_value_change_obj = NULL;
         }
     }

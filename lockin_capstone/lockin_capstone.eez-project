@@ -136,6 +136,15 @@
         "defaultValue": "\"\"",
         "persistent": false,
         "native": false
+      },
+      {
+        "objID": "71f5a611-ec39-49c4-c943-433b57ada9e9",
+        "name": "start_end_str",
+        "type": "string",
+        "size": null,
+        "defaultValue": "\"\"",
+        "persistent": false,
+        "native": false
       }
     ],
     "structures": [],
@@ -200,9 +209,9 @@
               "objID": "97f36eda-570b-49e5-c2ca-82d73c1b600f",
               "type": "LVGLButtonWidget",
               "left": 4,
-              "top": 214,
-              "width": 73,
-              "height": 34,
+              "top": 201,
+              "width": 92,
+              "height": 47,
               "customInputs": [],
               "customOutputs": [],
               "style": {
@@ -304,10 +313,10 @@
             {
               "objID": "8fd98c3e-d892-41c0-be0e-a0d6009bbff5",
               "type": "LVGLButtonWidget",
-              "left": 164,
-              "top": 214,
-              "width": 73,
-              "height": 34,
+              "left": 144,
+              "top": 201,
+              "width": 92,
+              "height": 47,
               "customInputs": [],
               "customOutputs": [],
               "style": {
@@ -478,7 +487,7 @@
             {
               "objID": "4e7c15a0-471e-4297-e8a9-93fed9ad9c91",
               "type": "LVGLLabelWidget",
-              "left": 77,
+              "left": 79,
               "top": 87,
               "width": 87,
               "height": 33,
@@ -520,7 +529,7 @@
               },
               "group": "",
               "groupIndex": 0,
-              "text": "display_text_str",
+              "text": "display_tim_str",
               "textType": "expression",
               "longMode": "WRAP",
               "recolor": false,
@@ -529,10 +538,10 @@
             {
               "objID": "fd110cfa-d684-4e40-d1cd-34c59abd009d",
               "type": "LVGLButtonWidget",
-              "left": 31,
-              "top": 277,
-              "width": 103,
-              "height": 34,
+              "left": 74,
+              "top": 264,
+              "width": 92,
+              "height": 47,
               "customInputs": [],
               "customOutputs": [],
               "style": {
@@ -551,7 +560,7 @@
                   "userData": 0
                 }
               ],
-              "identifier": "pomo_start_button",
+              "identifier": "pomo_start_end_button",
               "leftUnit": "px",
               "topUnit": "px",
               "widthUnit": "px",
@@ -624,105 +633,6 @@
               },
               "group": "",
               "groupIndex": 0
-            },
-            {
-              "objID": "81997f35-3f3d-4037-833e-1848a915a128",
-              "type": "LVGLLabelWidget",
-              "left": 85,
-              "top": 218,
-              "width": 14,
-              "height": 27,
-              "customInputs": [],
-              "customOutputs": [],
-              "style": {
-                "objID": "ba0615f2-58eb-46d8-efcc-d6b7b55b9ac1",
-                "useStyle": "default",
-                "conditionalStyles": [],
-                "childStyles": []
-              },
-              "timeline": [],
-              "eventHandlers": [],
-              "leftUnit": "px",
-              "topUnit": "px",
-              "widthUnit": "content",
-              "heightUnit": "content",
-              "children": [],
-              "widgetFlags": "CLICK_FOCUSABLE|GESTURE_BUBBLE|PRESS_LOCK|SCROLLABLE|SCROLL_CHAIN_HOR|SCROLL_CHAIN_VER|SCROLL_ELASTIC|SCROLL_MOMENTUM|SCROLL_WITH_ARROW|SNAPPABLE",
-              "hiddenFlagType": "literal",
-              "clickableFlagType": "literal",
-              "flagScrollbarMode": "",
-              "flagScrollDirection": "",
-              "scrollSnapX": "",
-              "scrollSnapY": "",
-              "checkedStateType": "literal",
-              "disabledStateType": "literal",
-              "states": "",
-              "localStyles": {
-                "objID": "cbfcbfe1-26fa-40ff-a173-6903569972cc",
-                "definition": {
-                  "MAIN": {
-                    "DEFAULT": {
-                      "text_font": "MONTSERRAT_24"
-                    }
-                  }
-                }
-              },
-              "group": "",
-              "groupIndex": 0,
-              "text": "pomo_tim_period_str",
-              "textType": "expression",
-              "longMode": "WRAP",
-              "recolor": false,
-              "previewValue": "5"
-            },
-            {
-              "objID": "4a02bc58-632a-4023-982d-0c208345f200",
-              "type": "LVGLLabelWidget",
-              "left": 111,
-              "top": 218,
-              "width": 46,
-              "height": 27,
-              "customInputs": [],
-              "customOutputs": [],
-              "style": {
-                "objID": "809e6ff3-564e-4196-97be-fb5648ddbee3",
-                "useStyle": "default",
-                "conditionalStyles": [],
-                "childStyles": []
-              },
-              "timeline": [],
-              "eventHandlers": [],
-              "leftUnit": "px",
-              "topUnit": "px",
-              "widthUnit": "content",
-              "heightUnit": "content",
-              "children": [],
-              "widgetFlags": "CLICK_FOCUSABLE|GESTURE_BUBBLE|PRESS_LOCK|SCROLLABLE|SCROLL_CHAIN_HOR|SCROLL_CHAIN_VER|SCROLL_ELASTIC|SCROLL_MOMENTUM|SCROLL_WITH_ARROW|SNAPPABLE",
-              "hiddenFlagType": "literal",
-              "clickableFlagType": "literal",
-              "flagScrollbarMode": "",
-              "flagScrollDirection": "",
-              "scrollSnapX": "",
-              "scrollSnapY": "",
-              "checkedStateType": "literal",
-              "disabledStateType": "literal",
-              "states": "",
-              "localStyles": {
-                "objID": "9b1a9611-ddef-402a-b2f4-30111bcd04d3",
-                "definition": {
-                  "MAIN": {
-                    "DEFAULT": {
-                      "text_font": "MONTSERRAT_24"
-                    }
-                  }
-                }
-              },
-              "group": "",
-              "groupIndex": 0,
-              "text": "Min",
-              "textType": "literal",
-              "longMode": "WRAP",
-              "recolor": false
             }
           ],
           "widgetFlags": "CLICKABLE|PRESS_LOCK|CLICK_FOCUSABLE|GESTURE_BUBBLE|SNAPPABLE|SCROLLABLE|SCROLL_ELASTIC|SCROLL_MOMENTUM|SCROLL_CHAIN_HOR|SCROLL_CHAIN_VER",

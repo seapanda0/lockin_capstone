@@ -37,15 +37,12 @@ void app_logic_init();
 
 // ============= UI Variable Getters/Setters =============
 
-/**
- * Get the pomodoro period display string (e.g., "25 min")
- */
-const char *get_var_pomo_tim_period_str();
-
-/**
- * Set the pomodoro period display string
- */
-void set_var_pomo_tim_period_str(const char *value);
+int32_t get_var_timer_arc_value();
+void set_var_timer_arc_value(int32_t value);
+const char *get_var_display_tim_str();
+void set_var_display_tim_str(const char *value);
+const char *get_var_start_end_str();
+void set_var_start_end_str(const char *value);
 
 // ============= EEZ Studio Action Handlers =============
 // These are called by the generated UI
