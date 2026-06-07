@@ -14,16 +14,22 @@
 #include "driver/gpio.h"
 #include "driver/mcpwm_prelude.h"
 
-
 #include "pinout.h"
 #include "st7789.h"
 #include "lvgl.h"
 #include "ui.h"
+#include "screen_swipe.h"
+#include "connections.h"
 
 static const char *TAG = "ST7789";
 
 #define DISPLAY_TASK_STACK_SIZE  (10 * 1024)
-#define DISPLAY_TASK_PRIORITY    2
+#define DISPLAY_TASK_PRIORITY    5
+#define MOTOR_TASK_STACK_SIZE  (10 * 1024)
+#define MOTOR_TASK_PRIORITY    2
+#define CONNECTIONS_TASK_STACK_SIZE  (10 * 1024)
+#define CONNECTIONS_TASK_PRIORITY    2
+
 
 static void display_task(void *arg);
 
@@ -296,6 +302,8 @@ static void display_task(void *arg)
 
     // Start the EEZ Studio UI
     ui_init();
+    // Initialize swipe navigation (attach gesture handlers)
+    swipe_init();
 
     // Main LVGL loop
     while (1) {
@@ -335,7 +343,6 @@ void motor_turn_cw(uint32_t cmpr_value){
     mcpwm_comparator_set_compare_value(cmp_m_a_l, 0);   
 }
 
-
 void motor_turn_ccw(uint32_t cmpr_value){
     if (cmpr_value > COUNTER_PERIOD){
         cmpr_value = COUNTER_PERIOD;
@@ -346,6 +353,7 @@ void motor_turn_ccw(uint32_t cmpr_value){
     mcpwm_comparator_set_compare_value(cmp_m_b_l, 0);
     mcpwm_comparator_set_compare_value(cmp_m_a_l, cmpr_value);   
 }
+
 void motor_task(void *arg){
 
     mcpwm_timer_handle_t timer0 = NULL;
@@ -434,71 +442,30 @@ void motor_task(void *arg){
     mcpwm_timer_start_stop(timer0, MCPWM_TIMER_START_NO_STOP);
 
     while(1){
-        for(int i = 1000; i <= 8000; i += 1000){
-            motor_turn_ccw(i);
-            vTaskDelay(pdMS_TO_TICKS(1000));
+        // for(int i = 1000; i <= 8000; i += 1000){
+        //     motor_turn_ccw(i);
+        //     vTaskDelay(pdMS_TO_TICKS(1000));
             
-            motor_brake();
-            vTaskDelay(pdMS_TO_TICKS(1000));
+        //     motor_brake();
+        //     vTaskDelay(pdMS_TO_TICKS(1000));
 
-            motor_turn_cw(i);
-            vTaskDelay(pdMS_TO_TICKS(1000));
+        //     motor_turn_cw(i);
+        //     vTaskDelay(pdMS_TO_TICKS(1000));
 
-            motor_brake();
-            vTaskDelay(pdMS_TO_TICKS(1000));
+        //     motor_brake();
+        //     vTaskDelay(pdMS_TO_TICKS(1000));
 
-            ESP_LOGI(TAG, "compare value i = %d", i);
-        }
+        //     ESP_LOGI(TAG, "compare value i = %d", i);
+        // }
+
+        vTaskDelay(portMAX_DELAY);
     }
-    
-    // gpio_set_direction(MOTOR_B_L, GPIO_MODE_OUTPUT);
-    // gpio_set_direction(MOTOR_B_H, GPIO_MODE_OUTPUT);
-    // gpio_set_direction(MOTOR_A_L, GPIO_MODE_OUTPUT);
-    // gpio_set_direction(MOTOR_A_H, GPIO_MODE_OUTPUT);
-
-    // gpio_set_level(MOTOR_B_L, 0);
-    // gpio_set_level(MOTOR_B_H, 0);
-    // gpio_set_level(MOTOR_A_L, 0);
-    // gpio_set_level(MOTOR_A_H, 0);
-
-    // vTaskDelay(pdMS_TO_TICKS(4000));
-
-    // while (1){
-    //     gpio_set_level(MOTOR_B_L, 1);
-    //     gpio_set_level(MOTOR_A_H, 1);
-    //     gpio_set_level(MOTOR_B_H, 0);
-    //     gpio_set_level(MOTOR_A_L, 0);
-
-    //     vTaskDelay(pdMS_TO_TICKS(4000));
-        
-    //     // Braking
-    //     gpio_set_level(MOTOR_B_L, 1);
-    //     gpio_set_level(MOTOR_A_H, 0);
-    //     gpio_set_level(MOTOR_B_H, 0);
-    //     gpio_set_level(MOTOR_A_L, 1);
-
-    //     vTaskDelay(pdMS_TO_TICKS(100));
-
-    //     gpio_set_level(MOTOR_B_L, 0);
-    //     gpio_set_level(MOTOR_A_H, 0);
-    //     gpio_set_level(MOTOR_B_H, 1);
-    //     gpio_set_level(MOTOR_A_L, 1);
-
-    //     vTaskDelay(pdMS_TO_TICKS(4000));
-        
-    //     // Braking
-    //     gpio_set_level(MOTOR_B_L, 1);
-    //     gpio_set_level(MOTOR_A_H, 0);
-    //     gpio_set_level(MOTOR_B_H, 0);
-    //     gpio_set_level(MOTOR_A_L, 1);
-
-    //     vTaskDelay(pdMS_TO_TICKS(100));
-    // }
 }
 
 void app_main(void)
 {
     xTaskCreate(display_task, "display_task", DISPLAY_TASK_STACK_SIZE, NULL, DISPLAY_TASK_PRIORITY, NULL);
     xTaskCreate(motor_task, "motor_task", DISPLAY_TASK_STACK_SIZE, NULL, DISPLAY_TASK_PRIORITY, NULL);
+    xTaskCreate(connections_init, "connection_task", CONNECTIONS_TASK_STACK_SIZE, NULL, CONNECTIONS_TASK_PRIORITY, NULL);
     vTaskDelete(NULL);
 }

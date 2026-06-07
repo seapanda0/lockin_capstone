@@ -5,6 +5,7 @@
  */
 
 // This demo UI is adapted from LVGL official example: https://docs.lvgl.io/master/examples.html#loader-with-arc
+// File not used, for example purpose only
 
 #include "lvgl.h"
 

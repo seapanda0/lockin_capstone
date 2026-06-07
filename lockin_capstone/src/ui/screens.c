@@ -118,6 +118,7 @@ void create_screen_main() {
             lv_arc_set_bg_end_angle(obj, 360);
             lv_obj_add_event_cb(obj, event_handler_cb_main_obj0, LV_EVENT_ALL, 0);
             lv_obj_remove_flag(obj, LV_OBJ_FLAG_CLICKABLE);
+            lv_obj_set_style_bg_opa(obj, 0, LV_PART_KNOB | LV_STATE_DEFAULT);
         }
         {
             // time_text
@@ -153,12 +154,96 @@ void tick_screen_main() {
     }
 }
 
+void create_screen_clock() {
+    lv_obj_t *obj = lv_obj_create(0);
+    objects.clock = obj;
+    lv_obj_set_pos(obj, 0, 0);
+    lv_obj_set_size(obj, 320, 240);
+    {
+        lv_obj_t *parent_obj = obj;
+        {
+            lv_obj_t *obj = lv_label_create(parent_obj);
+            lv_obj_set_pos(obj, 80, 104);
+            lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
+            lv_label_set_text_static(obj, "Clock");
+        }
+        {
+            lv_obj_t *obj = lv_arc_create(parent_obj);
+            lv_obj_set_pos(obj, 132, 45);
+            lv_obj_set_size(obj, 150, 150);
+            lv_arc_set_value(obj, 25);
+        }
+    }
+    
+    tick_screen_clock();
+}
+
+void tick_screen_clock() {
+}
+
+void create_screen_alarm() {
+    lv_obj_t *obj = lv_obj_create(0);
+    objects.alarm = obj;
+    lv_obj_set_pos(obj, 0, 0);
+    lv_obj_set_size(obj, 320, 240);
+    {
+        lv_obj_t *parent_obj = obj;
+        {
+            lv_obj_t *obj = lv_label_create(parent_obj);
+            lv_obj_set_pos(obj, 80, 104);
+            lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
+            lv_label_set_text_static(obj, "Alarm");
+        }
+        {
+            lv_obj_t *obj = lv_keyboard_create(parent_obj);
+            lv_obj_set_pos(obj, 20, 104);
+            lv_obj_set_size(obj, 300, 120);
+            lv_obj_set_style_align(obj, LV_ALIGN_DEFAULT, LV_PART_MAIN | LV_STATE_DEFAULT);
+        }
+    }
+    
+    tick_screen_alarm();
+}
+
+void tick_screen_alarm() {
+}
+
+void create_screen_settings() {
+    lv_obj_t *obj = lv_obj_create(0);
+    objects.settings = obj;
+    lv_obj_set_pos(obj, 0, 0);
+    lv_obj_set_size(obj, 320, 240);
+    {
+        lv_obj_t *parent_obj = obj;
+        {
+            lv_obj_t *obj = lv_label_create(parent_obj);
+            lv_obj_set_pos(obj, 80, 104);
+            lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
+            lv_label_set_text_static(obj, "Settings");
+        }
+        {
+            lv_obj_t *obj = lv_bar_create(parent_obj);
+            lv_obj_set_pos(obj, 80, 161);
+            lv_obj_set_size(obj, 150, 10);
+            lv_bar_set_value(obj, 25, LV_ANIM_OFF);
+        }
+    }
+    
+    tick_screen_settings();
+}
+
+void tick_screen_settings() {
+}
+
 typedef void (*tick_screen_func_t)();
 tick_screen_func_t tick_screen_funcs[] = {
     tick_screen_main,
+    tick_screen_clock,
+    tick_screen_alarm,
+    tick_screen_settings,
 };
 void tick_screen(int screen_index) {
-    if (screen_index >= 0 && screen_index < 1) {
+    if (screen_index >= 0 && screen_index < 4) {
         tick_screen_funcs[screen_index]();
     }
 }
@@ -256,4 +341,7 @@ void create_screens() {
     // Initialize screens
     // Create screens
     create_screen_main();
+    create_screen_clock();
+    create_screen_alarm();
+    create_screen_settings();
 }

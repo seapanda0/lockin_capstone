@@ -15,3 +15,5 @@ dependencies:
   #   # All dependencies of `main` are public by default.
   #   public: true
   lvgl/lvgl: ^9.5.0
+  espressif/cjson: '*'
+  espressif/network_provisioning: '*'
