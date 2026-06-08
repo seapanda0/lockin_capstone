@@ -449,24 +449,41 @@ void motor_task(void *arg){
     mcpwm_timer_start_stop(timer0, MCPWM_TIMER_START_NO_STOP);
 
     while(1){
-        // for(int i = 1000; i <= 8000; i += 1000){
-        //     motor_turn_ccw(i);
-        //     vTaskDelay(pdMS_TO_TICKS(1000));
+        for(int i = 1000; i <= 8000; i += 1000){
+            motor_turn_ccw(i);
+            vTaskDelay(pdMS_TO_TICKS(1000));
             
-        //     motor_brake();
-        //     vTaskDelay(pdMS_TO_TICKS(1000));
+            motor_brake();
+            vTaskDelay(pdMS_TO_TICKS(1000));
 
-        //     motor_turn_cw(i);
-        //     vTaskDelay(pdMS_TO_TICKS(1000));
+            motor_turn_cw(i);
+            vTaskDelay(pdMS_TO_TICKS(1000));
 
-        //     motor_brake();
-        //     vTaskDelay(pdMS_TO_TICKS(1000));
+            motor_brake();
+            vTaskDelay(pdMS_TO_TICKS(1000));
 
-        //     ESP_LOGI(TAG, "compare value i = %d", i);
-        // }
+            ESP_LOGI(TAG, "compare value i = %d", i);
+        }
 
-        vTaskDelay(portMAX_DELAY);
+        // vTaskDelay(portMAX_DELAY);
     }
+}
+
+static volatile bool g_backlight_init = false;
+
+void set_backlight_brightness(int32_t percent) {
+    if (!g_backlight_init) {
+        return;
+    }
+
+    if (percent < 5) percent = 5;
+    if (percent > 100) percent = 100;
+
+    uint32_t duty = (percent * 1023) / 100;
+    ledc_set_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_0, duty);
+    ledc_update_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_0);
+
+    ESP_LOGI("BACKLIGHT", "Brightness updated to %d%% (duty: %lu)", (int)percent, (unsigned long)duty);
 }
 
 void backlight_task(void *pvParameters) {
@@ -487,7 +504,8 @@ void backlight_task(void *pvParameters) {
     ledc_timer_config(&ledc_timer);
 
     // Configure LEDC Channel
-    uint32_t duty = (70 * 1023) / 100; // 70% of 1023 = ~716
+    int32_t initial_brightness = get_var_screen_brightness();
+    uint32_t duty = (initial_brightness * 1023) / 100;
     ledc_channel_config_t ledc_channel = {
         .speed_mode     = LEDC_LOW_SPEED_MODE,
         .channel        = LEDC_CHANNEL_0,
@@ -499,8 +517,10 @@ void backlight_task(void *pvParameters) {
     };
     ledc_channel_config(&ledc_channel);
 
-    ESP_LOGI("BACKLIGHT", "Brightness set to constant 70%% (duty: %lu)", (unsigned long)duty);
+    ESP_LOGI("BACKLIGHT", "Brightness set to initial %d%% (duty: %lu)", (int)initial_brightness, (unsigned long)duty);
     
+    g_backlight_init = true;
+
     // Deleting the task as we no longer need to update the duty cycle
     vTaskDelete(NULL);
 }

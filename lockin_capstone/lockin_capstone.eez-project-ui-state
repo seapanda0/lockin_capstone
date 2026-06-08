@@ -1,8 +1,8 @@
 {
   "navigation": {
     "selectedUserPageObject": "[lockin_capstone.eez-project]:/userPages/0",
-    "selectedActionObject": "[lockin_capstone.eez-project]:/actions/0",
-    "selectedGlobalVariableObject": "[lockin_capstone.eez-project]:/variables/globalVariables/1",
+    "selectedActionObject": "[lockin_capstone.eez-project]:/actions/1",
+    "selectedGlobalVariableObject": "[lockin_capstone.eez-project]:/variables/globalVariables/2",
     "subnavigationSelectedItems": {
       "variables-tab/sub-navigation/selected-item": "Global"
     }
@@ -193,6 +193,7 @@
               "type": "tabset",
               "id": "EDITORS",
               "weight": 46.407398570574294,
+              "selected": 2,
               "enableDeleteWhenEmpty": false,
               "enableClose": false,
               "children": [
@@ -211,10 +212,10 @@
                 {
                   "type": "tab",
                   "id": "#49d56901-5fa1-4bcf-ad59-88abfb003662",
-                  "name": "Clock",
+                  "name": "Settings",
                   "component": "editor",
                   "config": {
-                    "objectPath": "[lockin_capstone.eez-project]:/userPages/1",
+                    "objectPath": "[lockin_capstone.eez-project]:/userPages/3",
                     "permanent": false
                   },
                   "icon": "svg:page"
@@ -241,7 +242,7 @@
                 {
                   "type": "tabset",
                   "id": "#7756ed54-543f-422b-8fbf-b9e60fee0b97",
-                  "weight": 1.7197231833910034,
+                  "weight": 1.6228373702422145,
                   "children": [
                     {
                       "type": "tab",
@@ -256,7 +257,7 @@
                 {
                   "type": "tabset",
                   "id": "#84d0c87e-f60c-49d6-8b32-574cbcdf9b94",
-                  "weight": 1.2802768166089966,
+                  "weight": 1.3771626297577855,
                   "children": [
                     {
                       "type": "tab",
@@ -1098,15 +1099,18 @@
         "0": {
           "0": {},
           "1": {},
+          "3": {
+            "$selected": true
+          },
           "4": {}
         }
       },
       "transform": {
         "translate": {
-          "x": -193.68956056038525,
-          "y": -167.2098484848483
+          "x": -281.8780865958307,
+          "y": -402.1859269452618
         },
-        "scale": 1.5
+        "scale": 2.5
       },
       "timeline": {
         "isEditorActive": false,
@@ -1127,10 +1131,10 @@
       },
       "transform": {
         "translate": {
-          "x": -160,
-          "y": -120
+          "x": -89.27664141414135,
+          "y": -189.32348484848478
         },
-        "scale": 1.5
+        "scale": 1.75
       },
       "timeline": {
         "isEditorActive": false,
@@ -1144,9 +1148,7 @@
       "selectionBack": {
         "0": {
           "0": {},
-          "1": {
-            "$selected": true
-          }
+          "1": {}
         }
       },
       "transform": {
@@ -1154,7 +1156,7 @@
           "x": -160,
           "y": -120
         },
-        "scale": 0.9
+        "scale": 1.75
       },
       "timeline": {
         "isEditorActive": false,
@@ -1166,14 +1168,18 @@
     "[lockin_capstone.eez-project]:/userPages/3[flow-state]": {
       "selectionFront": {},
       "selectionBack": {
-        "0": {}
+        "0": {
+          "0": {
+            "$selected": true
+          }
+        }
       },
       "transform": {
         "translate": {
           "x": -160,
           "y": -120
         },
-        "scale": 0.9
+        "scale": 2.5
       },
       "timeline": {
         "isEditorActive": false,
@@ -1198,12 +1204,11 @@
   "lvglPart": "MAIN",
   "lvglState": "DEFAULT",
   "lvglExpandedPropertiesGroup": [
-    "ARC",
-    "BACKGROUND",
-    "TEXT"
+    "TEXT",
+    "BACKGROUND"
   ],
   "showInactiveFlowsInDebugger": true,
   "globalFlowZoom": true,
-  "flowZoom": 1.5,
+  "flowZoom": 2.5,
   "implementationLanguage": "C"
 }

@@ -28,6 +28,13 @@ typedef struct _objects_t {
     lv_obj_t *obj0;
     lv_obj_t *time_text;
     lv_obj_t *pomo_start_end_button;
+    lv_obj_t *clock_text;
+    lv_obj_t *clock_text_1;
+    lv_obj_t *clock_text_2;
+    lv_obj_t *screen_brightness_slider;
+    lv_obj_t *volume_slider;
+    lv_obj_t *locker_lock;
+    lv_obj_t *locker_unlock;
 } objects_t;
 
 extern objects_t objects;

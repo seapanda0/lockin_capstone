@@ -19,6 +19,8 @@
 #include "esp_http_client.h"
 #include "esp_sntp.h"
 #include "esp_timer.h"
+#include <time.h>
+#include <stdlib.h>
 
 #include "connections.h"
 
@@ -311,6 +313,10 @@ static void clear_credentials_and_reboot(void) {
 
 // ── NTP time sync ─────────────────────────────────────────────────────────
 static void sync_time(void) {
+    // Set timezone to GMT+8 (CST-8 / SGT-8)
+    setenv("TZ", "CST-8", 1);
+    tzset();
+
     esp_sntp_setoperatingmode(SNTP_OPMODE_POLL);
     esp_sntp_setservername(0, "pool.ntp.org");
     esp_sntp_init();

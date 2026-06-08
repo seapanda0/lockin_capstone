@@ -7,6 +7,7 @@
 #include "ui.h"
 #include <stdio.h>
 #include <string.h>
+#include <time.h>
 
 static const char *TAG = "APP_LOGIC";
 
@@ -276,4 +277,115 @@ void action_button_start_pomo_pressed(lv_event_t * e) {
         ESP_LOGI(TAG, "Start pomodoro button pressed; duration=%u seconds", pomo_tim_period_sec);
         start_timer(pomo_tim_period_sec);
     }
+}
+
+// ============= Clock/Time Variables for GUI =============
+static char clock_str[32] = "";
+static char date_str[32] = "";
+static char day_str[32] = "";
+
+const char *get_var_clcok_str() {
+    time_t now;
+    struct tm timeinfo;
+    time(&now);
+    localtime_r(&now, &timeinfo);
+    
+    // 24 hour format: 09:30:12
+    strftime(clock_str, sizeof(clock_str), "%H:%M:%S", &timeinfo);
+    return clock_str;
+}
+
+void set_var_clcok_str(const char *value) {
+    if (value != NULL) {
+        strncpy(clock_str, value, sizeof(clock_str) - 1);
+        clock_str[sizeof(clock_str) - 1] = '\0';
+    }
+}
+
+const char *get_var_date_str() {
+    time_t now;
+    struct tm timeinfo;
+    time(&now);
+    localtime_r(&now, &timeinfo);
+    
+    // date in dd/mm/yyyy format
+    strftime(date_str, sizeof(date_str), "%d/%m/%Y", &timeinfo);
+    return date_str;
+}
+
+void set_var_date_str(const char *value) {
+    if (value != NULL) {
+        strncpy(date_str, value, sizeof(date_str) - 1);
+        date_str[sizeof(date_str) - 1] = '\0';
+    }
+}
+
+const char *get_var_day_str() {
+    time_t now;
+    struct tm timeinfo;
+    time(&now);
+    localtime_r(&now, &timeinfo);
+    
+    // day of the week
+    strftime(day_str, sizeof(day_str), "%A", &timeinfo);
+    return day_str;
+}
+
+void set_var_day_str(const char *value) {
+    if (value != NULL) {
+        strncpy(day_str, value, sizeof(day_str) - 1);
+        day_str[sizeof(day_str) - 1] = '\0';
+    }
+}
+
+// ============= Screen Brightness Variable =============
+static int32_t screen_brightness = 70; // Default to 70%
+
+int32_t get_var_screen_brightness() {
+    return screen_brightness;
+}
+
+extern void set_backlight_brightness(int32_t percent);
+
+void set_var_screen_brightness(int32_t value) {
+    if (value < 0) value = 0;
+    if (value > 100) value = 100;
+    screen_brightness = value;
+    set_backlight_brightness(screen_brightness);
+}
+
+// ============= Volume Variable =============
+static int32_t volume_value = 25; // Default to 25%
+
+int32_t get_var_volume() {
+    return volume_value;
+}
+
+void set_var_volume(int32_t value) {
+    if (value < 0) value = 0;
+    if (value > 100) value = 100;
+    volume_value = value;
+    ESP_LOGI(TAG, "Volume updated to %d%%", (int)volume_value);
+}
+
+// ============= Timer Toggling for External Code =============
+void toggle_pomo_timer() {
+    if (pomodoro.running) {
+        ESP_LOGI(TAG, "Toggling timer: stopping timer");
+        stop_timer();
+    } else {
+        ESP_LOGI(TAG, "Toggling timer: starting timer with duration %u seconds", (unsigned int)pomo_tim_period_sec);
+        start_timer(pomo_tim_period_sec);
+    }
+}
+
+// ============= Lock/Unlock Button Actions =============
+void action_button_lock_pressed(lv_event_t * e) {
+    (void)e;
+    ESP_LOGI(TAG, "Lock button pressed");
+}
+
+void action_button_unlock_pressed(lv_event_t * e) {
+    (void)e;
+    ESP_LOGI(TAG, "Unlock button pressed");
 }
